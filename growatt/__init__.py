@@ -100,6 +100,23 @@ class GrowattApi:
         )
         return self._back_success_response(response)
 
+    def new_inverter_detail(self, inverterId):
+        """
+        # /newInverterAPI.do?op=getInverterDetailData_two&inverterId=CHAG93234A
+        
+        Return amount of power generated for the given timespan.
+        * Timespan.day : power on each half hour of the day.
+        * Timespan.month : power on each day of the month.
+        * Timespan.year: power on each month of the year.
+        * Timespan.total: power on each year. `date` parameter is ignored.
+        """
+
+        response = self.session.get(
+            self.get_url("newInverterAPI.do"),
+            params={"op":"getInverterDetailData_two", "inverterId":inverterId},
+        )
+        return response.json()
+
     def new_plant_detail(self, plant_id, timespan, date):
         """
         Return amount of power generated for the given timespan.
@@ -141,6 +158,7 @@ class GrowattApi:
         """
         if response.status_code != 200:
             raise GrowattApiError("Request failed: %s" % response)
+        
         data = response.json()
         result = data["back"]
         if not "success" in result or not result["success"]:
