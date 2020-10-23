@@ -24,7 +24,16 @@ with GrowattApi() as api:
     v2 = plant_detail["data"]["pac"]
     v6 = plant_detail["data"]["vacr"]
     
-    # format curl command
-    curlCmd = f'curl -d "d={d}" -d "t={t}" -d "v1={v1}" -d "v2={v2}" -d "v6={v6}" -H "X-Pvoutput-Apikey: {apiKey}" -H "X-Pvoutput-SystemId: {systemId}" https://pvoutput.org/service/r2/addstatus.jsp'
-    #print(curlCmd)
-    subprocess.check_output(curlCmd, shell=True, stderr=subprocess.STDOUT)
+    # if no power value from inverter fall back to plant power
+    if v1 == 0:
+        plant_detail = api.get_user_center_energy_data()
+        v2 = plant_detail["powerValue"]
+        v1 = float(plant_detail["todayValue"]) * 1000
+        curlCmd = f'curl -d "d={d}" -d "t={t}" -d "v1={v1}" -d "v2={v2}" -H "X-Pvoutput-Apikey: {apiKey}" -H "X-Pvoutput-SystemId: {systemId}" https://pvoutput.org/service/r2/addstatus.jsp'
+    else:
+        curlCmd = f'curl -d "d={d}" -d "t={t}" -d "v1={v1}" -d "v2={v2}" -d "v6={v6}" -H "X-Pvoutput-Apikey: {apiKey}" -H "X-Pvoutput-SystemId: {systemId}" https://pvoutput.org/service/r2/addstatus.jsp'
+    
+    
+    
+    print(curlCmd)
+    print(subprocess.check_output(curlCmd, shell=True, stderr=subprocess.STDOUT))
